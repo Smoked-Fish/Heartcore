@@ -1,0 +1,12 @@
+{
+	"required": true,
+	"package": "espy.heartcore.mixin",
+	"compatibilityLevel": "JAVA_17",
+	"mixins": [
+		"DeathScreenMixin",
+      "ItemFinishedMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

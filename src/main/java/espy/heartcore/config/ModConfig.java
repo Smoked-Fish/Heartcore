@@ -21,6 +21,7 @@ public class ModConfig implements ConfigData {
     public static class Healing {
         public int maxHearts = 10;
         public int minHearts = 1;
+        public int respawnCost = 1;
         public boolean regainHearts = true;
         public List<String> healingItems = new ArrayList<>(List.of("minecraft:enchanted_golden_apple"));
     }
@@ -35,6 +36,7 @@ public class ModConfig implements ConfigData {
 
 
 
+    @SuppressWarnings("unused")
     public ModConfig() {}
 
     public ModConfig(int minHearts) {

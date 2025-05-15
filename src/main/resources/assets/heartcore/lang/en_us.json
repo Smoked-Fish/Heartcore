@@ -4,6 +4,7 @@
   "text.autoconfig.heartcore.option.healingConfig": "Heart Settings",
   "text.autoconfig.heartcore.option.healingConfig.maxHearts": "Maximum Hearts",
   "text.autoconfig.heartcore.option.healingConfig.minHearts": "Minimum Hearts",
+  "text.autoconfig.heartcore.option.healingConfig.respawnCost": "Respawn Heart Cost",
   "text.autoconfig.heartcore.option.healingConfig.regainHearts": "Enable Regaining Hearts",
   "text.autoconfig.heartcore.option.healingConfig.healingItems": "Healing Items",
 

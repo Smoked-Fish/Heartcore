@@ -12,7 +12,7 @@ public class HeartcoreManager {
     public static void removeHeart(PlayerEntity player) {
         if (!player.getWorld().getLevelProperties().isHardcore()) return;
 
-        float newMaxHealth = Math.max((player.getMaxHealth() - 2), Heartcore.CONFIG.healingConfig.minHearts * 2);
+        float newMaxHealth = Math.max((player.getMaxHealth() - Heartcore.CONFIG.healingConfig.respawnCost * 2), Heartcore.CONFIG.healingConfig.minHearts * 2);
         Objects.requireNonNull(player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH)).setBaseValue(newMaxHealth);
     }
 
@@ -22,6 +22,7 @@ public class HeartcoreManager {
     }
 
     public static boolean isOutOfLives(PlayerEntity player) {
-        return player.getMaxHealth() <= (HeartcoreClient.serverMinHearts * 2);
+        float newMax = player.getMaxHealth() - Heartcore.CONFIG.healingConfig.respawnCost * 2;
+        return newMax < HeartcoreClient.serverMinHearts * 2;
     }
 }

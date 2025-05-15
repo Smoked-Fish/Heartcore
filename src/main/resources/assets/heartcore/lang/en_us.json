@@ -1,0 +1,16 @@
+{
+  "text.autoconfig.heartcore.title": "Heartcore",
+
+  "text.autoconfig.heartcore.option.healingConfig": "Heart Settings",
+  "text.autoconfig.heartcore.option.healingConfig.maxHearts": "Maximum Hearts",
+  "text.autoconfig.heartcore.option.healingConfig.minHearts": "Minimum Hearts",
+  "text.autoconfig.heartcore.option.healingConfig.respawnCost": "Respawn Heart Cost",
+  "text.autoconfig.heartcore.option.healingConfig.regainHearts": "Enable Regaining Hearts",
+  "text.autoconfig.heartcore.option.healingConfig.healingItems": "Healing Items",
+
+  "text.autoconfig.heartcore.option.respawningConfig": "Respawn Settings",
+  "text.autoconfig.heartcore.option.respawningConfig.randomRespawn": "Random Respawn",
+  "text.autoconfig.heartcore.option.respawningConfig.maxRadius": "Maximum Respawn Radius",
+  "text.autoconfig.heartcore.option.respawningConfig.minRadius": "Minimum Respawn Radius"
+}
+

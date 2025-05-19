@@ -12,12 +12,10 @@ public class HeartcoreClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-		ClientPlayNetworking.registerGlobalReceiver(HandshakePacket.ID, (payload, context) -> {
-			MinecraftClient.getInstance().execute(() -> isServerHeartcorePresent = true);
-		});
+		ClientPlayNetworking.registerGlobalReceiver(HandshakePacket.ID, (payload, context) ->
+				MinecraftClient.getInstance().execute(() -> isServerHeartcorePresent = true));
 
-		ClientPlayNetworking.registerGlobalReceiver(ConfigSyncPacket.ID, (payload, context) -> {
-			MinecraftClient.getInstance().execute(() -> HeartcoreManager.serverMinHearts = payload.modConfig().healingConfig.minHearts);
-		});
+		ClientPlayNetworking.registerGlobalReceiver(ConfigSyncPacket.ID, (payload, context) ->
+				MinecraftClient.getInstance().execute(() -> HeartcoreManager.serverMinHearts = payload.modConfig().healingConfig.minHearts));
 	}
 }

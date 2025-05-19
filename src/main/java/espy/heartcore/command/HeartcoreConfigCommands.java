@@ -5,25 +5,17 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import espy.heartcore.network.ConfigSyncPacket;
-import espy.heartcore.util.HeartcoreManager;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import me.shedaniel.autoconfig.ConfigHolder;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.registry.Registries;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import espy.heartcore.Heartcore;
 import espy.heartcore.config.ModConfig;
 import me.shedaniel.autoconfig.AutoConfig;
-
-import static espy.heartcore.network.ConfigSyncPacket.SERVER;
 
 public class HeartcoreConfigCommands {
 

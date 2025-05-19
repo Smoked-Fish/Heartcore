@@ -7,9 +7,8 @@ import net.minecraft.server.command.ServerCommandSource;
 
 public class HeartcoreCommandRegistry {
     public static void register() {
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            registerCommands(dispatcher);
-        });
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
+                registerCommands(dispatcher));
     }
 
     private static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher) {

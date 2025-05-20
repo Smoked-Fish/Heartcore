@@ -2,6 +2,7 @@ package espy.heartcore.network;
 
 import espy.heartcore.Heartcore;
 import espy.heartcore.config.ModConfig;
+import espy.heartcore.util.HeartcoreManager;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigHolder;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -20,17 +21,16 @@ import net.minecraft.util.Identifier;
 // Define the config values to sync
 public record ConfigSyncPacket(ModConfig modConfig) implements CustomPayload {
     public static final Identifier CONFIG_SYNC = Identifier.of(Heartcore.MOD_ID, "config_sync");
-    public static final CustomPayload.Id<ConfigSyncPacket> ID = new CustomPayload.Id<>(CONFIG_SYNC);
-    private static MinecraftServer SERVER;
+    public static final Id<ConfigSyncPacket> ID = new Id<>(CONFIG_SYNC);
+    public static MinecraftServer SERVER;
 
      public static final PacketCodec<RegistryByteBuf, ConfigSyncPacket> CODEC = PacketCodec.tuple(
              PacketCodecs.INTEGER, (ConfigSyncPacket p) -> AutoConfig.getConfigHolder(ModConfig.class).get().healingConfig.minHearts,
              (min) -> new ConfigSyncPacket(new ModConfig(min))
      );
 
-
     @Override
-    public CustomPayload.Id<? extends CustomPayload> getId() {
+    public Id<? extends CustomPayload> getId() {
         return ID;
     }
 
@@ -60,6 +60,10 @@ public record ConfigSyncPacket(ModConfig modConfig) implements CustomPayload {
 
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
             ServerPlayNetworking.send(player, packet);
+        }
+
+        if (server.isDedicated()){
+            HeartcoreManager.serverMinHearts = config.healingConfig.minHearts;
         }
 
         return ActionResult.SUCCESS;

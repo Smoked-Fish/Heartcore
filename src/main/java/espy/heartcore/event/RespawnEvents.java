@@ -4,12 +4,12 @@ import espy.heartcore.Heartcore;
 import espy.heartcore.util.HeartcoreManager;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.*;
-import net.minecraft.world.GameMode;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3i;
+import net.minecraft.world.GameMode;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
@@ -26,8 +26,6 @@ public class RespawnEvents {
         if (Heartcore.CONFIG.respawningConfig.randomRespawn) {
             BlockPos pos = findRandomLandPosition(newPlayer.getServerWorld());
             if (pos != null) {
-                Set<PositionFlag> flags = EnumSet.noneOf(PositionFlag.class);
-//                newPlayer.teleport(newPlayer.getServerWorld(), pos.getX(), pos.getY(), pos.getZ(), flags, newPlayer.getYaw(), newPlayer.getPitch(), true);
                 newPlayer.teleport(newPlayer.getServerWorld(), pos.getX(), pos.getY(), pos.getZ(), newPlayer.getYaw(), newPlayer.getPitch());
             }
         }

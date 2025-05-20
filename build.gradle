@@ -15,10 +15,16 @@ repositories {
 	maven { url "https://maven.terraformersmc.com/releases/" }
 }
 
-fabricApi {
-	configureDataGeneration {
-		client = true
+loom {
+	splitEnvironmentSourceSets()
+
+	mods {
+		"heartcore" {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+		}
 	}
+
 }
 
 dependencies {

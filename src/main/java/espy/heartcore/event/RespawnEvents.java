@@ -10,7 +10,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
-import net.minecraft.world.GameMode;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
@@ -31,9 +30,8 @@ public class RespawnEvents {
                 newPlayer.teleport(newPlayer.getServerWorld(), pos.getX(), pos.getY(), pos.getZ(), flags, newPlayer.getYaw(), newPlayer.getPitch(), true);
             }
         }
-
         // Delay game mode change
-        Objects.requireNonNull(newPlayer.getServer()).execute(() -> newPlayer.changeGameMode(GameMode.SURVIVAL));
+        DelayedEvents.scheduleSurvivalMode(newPlayer);
     }
 
     private static BlockPos findRandomLandPosition(ServerWorld world) {

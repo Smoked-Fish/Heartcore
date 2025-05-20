@@ -8,5 +8,6 @@ public class HeartcoreEventRegistry {
         ServerPlayerEvents.AFTER_RESPAWN.register(RespawnEvents::onPlayerRespawn);
         ServerPlayConnectionEvents.JOIN.register(JoinEvents::onPlayerJoin);
         ItemFinishedEvents.EVENT.register(ItemFinishedEvents::onItemFinished);
+        DelayedEvents.register();
     }
 }

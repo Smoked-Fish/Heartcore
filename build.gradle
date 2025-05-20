@@ -15,10 +15,16 @@ repositories {
 	maven { url "https://maven.terraformersmc.com/releases/" }
 }
 
-fabricApi {
-	configureDataGeneration {
-		client = true
+loom {
+	splitEnvironmentSourceSets()
+
+	mods {
+		"heartcore" {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+		}
 	}
+
 }
 
 dependencies {
@@ -33,7 +39,7 @@ dependencies {
 	// Config
 	modApi "me.shedaniel.cloth:cloth-config-fabric:17.0.144"
 	modApi "com.terraformersmc:modmenu:13.0.3"
-
+	
 }
 
 processResources {

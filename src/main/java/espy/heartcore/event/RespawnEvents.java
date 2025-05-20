@@ -15,7 +15,7 @@ import net.minecraft.world.chunk.Chunk;
 import java.util.*;
 
 public class RespawnEvents {
-    public static void onPlayerRespawn(ServerPlayerEntity oldPlayer, ServerPlayerEntity newPlayer, boolean alive) {
+    public static void onPlayerRespawn(ServerPlayerEntity ignoredOldPlayer, ServerPlayerEntity newPlayer, boolean ignoredAlive) {
         if (!newPlayer.getWorld().getLevelProperties().isHardcore()) return;
         if (HeartcoreManager.isOutOfLives(newPlayer)) return;
 
@@ -30,8 +30,6 @@ public class RespawnEvents {
                 newPlayer.teleport(newPlayer.getServerWorld(), pos.getX(), pos.getY(), pos.getZ(), flags, newPlayer.getYaw(), newPlayer.getPitch(), true);
             }
         }
-        // Delay game mode change
-        DelayedEvents.scheduleSurvivalMode(newPlayer);
     }
 
     private static BlockPos findRandomLandPosition(ServerWorld world) {

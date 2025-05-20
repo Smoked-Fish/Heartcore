@@ -3,7 +3,9 @@
   "package": "espy.heartcore.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "ItemFinishedMixin"
+    "ItemFinishedMixin",
+    "ServerPlayerEntityMixin",
+    "ServerPlayerInteractionManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

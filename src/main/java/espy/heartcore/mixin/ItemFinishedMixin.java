@@ -20,6 +20,6 @@ public abstract class ItemFinishedMixin {
         if (!(user instanceof ServerPlayerEntity player)) return;
         if (!Heartcore.CONFIG.healingConfig.enableItemHealing) return;
 
-        ItemFinishedEvents.EVENT.invoker().onFinish(player, world, stack.copy());
+        ItemFinishedEvents.ITEM_FINISHED.invoker().onFinish(player, world, stack.copy());
     }
 }

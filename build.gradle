@@ -6,7 +6,7 @@ plugins {
 def minecraftVersion = project.minecraft_version
 def modVersion = project.mod_version
 def loaderVersion = project.loader_version
-def version =  "${modVersion}+${minecraftVersion}"
+version =  "${modVersion}+${minecraftVersion}"
 group = project.maven_group
 
 base {

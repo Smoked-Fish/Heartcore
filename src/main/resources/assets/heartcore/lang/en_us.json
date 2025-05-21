@@ -2,6 +2,7 @@
   "text.autoconfig.heartcore.title": "Heartcore",
 
   "text.autoconfig.heartcore.option.healingConfig": "Heart Settings",
+  "text.autoconfig.heartcore.option.healingConfig.enforceMaxHealth": "Enforce Max Health",
   "text.autoconfig.heartcore.option.healingConfig.enableItemHealing": "Enable Healing Items",
   "text.autoconfig.heartcore.option.healingConfig.maxHearts": "Maximum Hearts",
   "text.autoconfig.heartcore.option.healingConfig.minHearts": "Minimum Hearts",
@@ -14,4 +15,3 @@
   "text.autoconfig.heartcore.option.respawningConfig.maxRadius": "Maximum Respawn Radius",
   "text.autoconfig.heartcore.option.respawningConfig.minRadius": "Minimum Respawn Radius"
 }
-

@@ -23,14 +23,18 @@ public class HeartcoreManager {
     }
 
     public static boolean isOutOfLives(PlayerEntity player) {
-        float newMax = player.getMaxHealth() - Heartcore.CONFIG.healingConfig.respawnHeartPenalty;
-        return newMax < serverMinHearts;
+        if (player instanceof CustomPlayerData customData) {
+            float newMax = customData.getHealthAtDeath() - Heartcore.CONFIG.healingConfig.respawnHeartPenalty;
+            return newMax < serverMinHearts;
+        }
+        return true;
     }
+
 
     public static boolean givePlayerHearts(PlayerEntity from, PlayerEntity to, int amount) {
         if (from == to) return false;
 
-        double minHearts = Heartcore.CONFIG.healingConfig.minHearts;
+        double minHearts = serverMinHearts;
         double maxHearts = Heartcore.CONFIG.healingConfig.maxHearts;
 
         double fromHearts = from.getAttributeBaseValue(EntityAttributes.MAX_HEALTH);

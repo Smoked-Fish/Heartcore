@@ -1,7 +1,7 @@
 package espy.heartcore.mixin.client;
 
 import espy.heartcore.HeartcoreClient;
-import espy.heartcore.util.HeartcoreManager;
+import espy.heartcore.util.HeartcoreClientManager;
 import net.minecraft.client.gui.screen.DeathScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -26,7 +26,7 @@ public abstract class DeathScreenMixin extends Screen {
     private void heartcore$modifyButtons(CallbackInfo ci) {
         if (!HeartcoreClient.isServerHeartcorePresent ) return;
         if (client == null || client.player == null) return;
-        if (HeartcoreManager.isOutOfLives(client.player)) return;
+        if (HeartcoreClientManager.isOutOfLives(client.player)) return;
 
         // Find and rename the spectator button
         for (var widget : this.children()) {

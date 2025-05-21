@@ -19,6 +19,7 @@ public class ModConfig implements ConfigData {
 
 
     public static class Healing {
+        public boolean enforceMaxHealth = true;
         public boolean enableItemHealing = true;
         public int maxHearts = 20;
         public int minHearts = 2;

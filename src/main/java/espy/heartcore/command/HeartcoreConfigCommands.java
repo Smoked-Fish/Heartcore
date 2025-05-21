@@ -5,10 +5,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import espy.heartcore.Heartcore;
-import espy.heartcore.config.ModConfig;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.registry.Registries;
@@ -16,6 +13,9 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import espy.heartcore.Heartcore;
+import espy.heartcore.config.ModConfig;
+import me.shedaniel.autoconfig.AutoConfig;
 
 public class HeartcoreConfigCommands {
 
@@ -27,13 +27,15 @@ public class HeartcoreConfigCommands {
 
     public static LiteralArgumentBuilder<ServerCommandSource> build() {
         return CommandManager.literal("config")
+                .then(buildBoolSetter("enforceMaxHealth", value -> Heartcore.CONFIG.healingConfig.enforceMaxHealth = value))
                 .then(buildIntSetter("minHearts", 1, 1024, value -> Heartcore.CONFIG.healingConfig.minHearts = value))
                 .then(buildIntSetter("maxHearts", 1, 1024, value -> Heartcore.CONFIG.healingConfig.maxHearts = value))
-                .then(buildIntSetter("respawnHeartPenalty", 0, 1024, value -> Heartcore.CONFIG.healingConfig.respawnHeartPenalty = value))
+                .then(buildIntSetter("respawnHeartPenalty", -1024, 1024, value -> Heartcore.CONFIG.healingConfig.respawnHeartPenalty = value))
+                .then(buildIntSetter("heartsPerHealingItem", -1024, 1024, value -> Heartcore.CONFIG.healingConfig.heartsPerHealingItem = value))
                 .then(buildBoolSetter("enableItemHealing", value -> Heartcore.CONFIG.healingConfig.enableItemHealing = value))
                 .then(buildBoolSetter("randomRespawn", value -> Heartcore.CONFIG.respawningConfig.randomRespawn = value))
-                .then(buildIntSetter("maxRadius", 0, 15000000, value -> Heartcore.CONFIG.respawningConfig.maxRadius = value))
-                .then(buildIntSetter("minRadius", 0, 15000000, value -> Heartcore.CONFIG.respawningConfig.minRadius = value))
+                .then(buildIntSetter("maxRadius", -15000000, 15000000, value -> Heartcore.CONFIG.respawningConfig.maxRadius = value))
+                .then(buildIntSetter("minRadius", -15000000, 15000000, value -> Heartcore.CONFIG.respawningConfig.minRadius = value))
                 .then(CommandManager.literal("healingItems")
                         .then(CommandManager.literal("add")
                                 .then(CommandManager.argument("value", IdentifierArgumentType.identifier())

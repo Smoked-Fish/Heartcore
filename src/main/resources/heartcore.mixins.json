@@ -1,11 +1,13 @@
 {
-	"required": true,
-	"package": "espy.heartcore.mixin",
-	"compatibilityLevel": "JAVA_21",
-	"mixins": [
-		"ItemFinishedMixin"
-	],
-	"injectors": {
-		"defaultRequire": 1
+  "required": true,
+  "package": "espy.heartcore.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ItemFinishedMixin",
+    "ServerPlayerEntityMixin",
+    "ServerPlayerInteractionManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
 	}
 }

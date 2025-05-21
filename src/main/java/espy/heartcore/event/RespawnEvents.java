@@ -1,5 +1,6 @@
 package espy.heartcore.event;
 
+import com.google.common.base.Stopwatch;
 import espy.heartcore.Heartcore;
 import espy.heartcore.util.HeartcoreManager;
 import net.minecraft.block.BlockState;
@@ -14,46 +15,91 @@ import net.minecraft.world.Heightmap;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class RespawnEvents {
     public static void onPlayerRespawn(ServerPlayerEntity ignoredOldPlayer, ServerPlayerEntity newPlayer, boolean ignoredWasAlive) {
-        if (!isEligibleForRespawn(newPlayer)) return;
+        if (!shouldRespawn(newPlayer)) return;
 
-        processRespawnEffects(newPlayer);
-        handleRandomRespawn(newPlayer);
+        applyRespawnEffects(newPlayer);
+        tryRandomRespawn(newPlayer);
     }
 
-    private static boolean isEligibleForRespawn(ServerPlayerEntity player) {
-        return player.getWorld().getLevelProperties().isHardcore() && !HeartcoreManager.isOutOfLives(player);
+    private static final Executor randomTeleportExecutor = Executors.newCachedThreadPool(runnable -> {
+        Thread thread = new Thread(runnable, "RandomRespawn-LocationFinder");
+        thread.setUncaughtExceptionHandler((t, e) ->
+                Heartcore.LOGGER.error("Exception in Random Respawn thread", e)
+        );
+        return thread;
+    });
+
+    // === Respawn Eligibility & Effects ===
+
+    private static boolean shouldRespawn(ServerPlayerEntity player) {
+        return player.getWorld().getLevelProperties().isHardcore()
+                && !HeartcoreManager.isOutOfLives(player);
     }
 
-    private static void processRespawnEffects(ServerPlayerEntity player) {
+    private static void applyRespawnEffects(ServerPlayerEntity player) {
         HeartcoreManager.removeHeart(player);
         player.setHealth(player.getMaxHealth());
     }
 
-    private static void handleRandomRespawn(ServerPlayerEntity player) {
+
+    // Adapted with reference to MIT-licensed code from John-Paul-R/Essential-Commands.
+    // See: https://github.com/John-Paul-R/Essential-Commands/ for the original implementation.
+    private static void tryRandomRespawn(ServerPlayerEntity player) {
         if (!Heartcore.CONFIG.respawningConfig.randomRespawn) return;
 
-        BlockPos pos = findRandomLandPosition(player.getServerWorld());
-        if (pos != null) {
-            Set<PositionFlag> flags = EnumSet.noneOf(PositionFlag.class);
-            player.teleport(player.getServerWorld(), pos.getX(), pos.getY(), pos.getZ(), flags, player.getYaw(), player.getPitch(), true);
-        }
+        ServerWorld world = player.getServerWorld();
+
+        randomTeleportExecutor.execute(() -> {
+            Heartcore.LOGGER.info("Starting random respawn search for {}", player.getGameProfile().getName());
+            Stopwatch timer = Stopwatch.createStarted();
+
+            BlockPos safeRespawn = null;
+            for (int attempts = 0; attempts < 10 && safeRespawn == null; attempts++) {
+                try {
+                    safeRespawn = findRandomLandPosition(world);
+                } catch (Exception e) {
+                    Heartcore.LOGGER.warn("Respawn attempt {} failed: {}", attempts + 1, e.getMessage());
+                }
+            }
+
+            if (safeRespawn != null) {
+                teleportPlayerToRespawn(player, world, safeRespawn);
+            } else {
+                Heartcore.LOGGER.error("No valid respawn found after 10 attempts for {}", player.getGameProfile().getName());
+            }
+
+            Heartcore.LOGGER.info("Respawn search completed in {}", timer.stop());
+        });
     }
 
+    private static void teleportPlayerToRespawn(ServerPlayerEntity player, ServerWorld world, BlockPos pos) {
+        Objects.requireNonNull(player.getServer()).execute(() -> {
+            world.getChunk(pos.getX() >> 4, pos.getZ() >> 4); // Ensure chunk is loaded
+            Set<PositionFlag> flags = EnumSet.noneOf(PositionFlag.class);
+            player.teleport(player.getServerWorld(), pos.getX(), pos.getY(), pos.getZ(), flags, player.getYaw(), player.getPitch(), true);
+            Heartcore.LOGGER.info("Player {} respawned at {}", player.getName().getString(), pos);
+        });
+    }
+
+    // === Safe Position Search ===
+
     private static BlockPos findRandomLandPosition(ServerWorld world) {
-        final int MAX_ATTEMPTS = 20;
         Vec3i center = world.getSpawnPos();
+        final int MAX_ATTEMPTS = 20;
 
         for (int i = 0; i < MAX_ATTEMPTS; i++) {
-            BlockPos targetXZ = getRandomXZ(center);
-            Chunk chunk = world.getChunk(targetXZ);
-            OptionalInt yOpt = findSafeTopY(targetXZ.getX(), targetXZ.getZ(), world);
+            BlockPos candidate = getRandomXZ(center);
+            Chunk chunk = world.getChunk(candidate);
+            OptionalInt safeY = findSafeTopY(candidate.getX(), candidate.getZ(), world);
 
-            if (yOpt.isPresent()) {
-                BlockPos targetPos = new BlockPos(targetXZ.getX(), yOpt.getAsInt(), targetXZ.getZ());
-                if (isSafePosition(chunk, targetPos)) return targetPos;
+            if (safeY.isPresent()) {
+                BlockPos finalPos = new BlockPos(candidate.getX(), safeY.getAsInt(), candidate.getZ());
+                if (isSafePosition(chunk, finalPos)) return finalPos;
             }
         }
 
@@ -67,6 +113,7 @@ public class RespawnEvents {
         Random rand = new Random();
         double r = Math.sqrt(rand.nextDouble() * (maxRadius * maxRadius - minRadius * minRadius) + minRadius * minRadius);
         double angle = rand.nextDouble() * 2 * Math.PI;
+
         int dx = (int) Math.round(r * Math.cos(angle));
         int dz = (int) Math.round(r * Math.sin(angle));
 
@@ -74,16 +121,16 @@ public class RespawnEvents {
     }
 
     private static OptionalInt findSafeTopY(int x, int z, ServerWorld world) {
-        int surfaceY = world.getTopY(Heightmap.Type.WORLD_SURFACE, x, z);
-        BlockPos pos = new BlockPos(x, surfaceY, z);
+        int y = world.getTopY(Heightmap.Type.WORLD_SURFACE, x, z);
+        BlockPos pos = new BlockPos(x, y, z);
 
+        BlockState below = world.getBlockState(pos.down());
         BlockState feet = world.getBlockState(pos);
         BlockState head = world.getBlockState(pos.up());
-        BlockState below = world.getBlockState(pos.down());
 
         if (below.isSideSolidFullSquare(world, pos.down(), Direction.UP)
                 && feet.isAir() && head.isAir()) {
-            return OptionalInt.of(surfaceY);
+            return OptionalInt.of(y);
         }
 
         return OptionalInt.empty();

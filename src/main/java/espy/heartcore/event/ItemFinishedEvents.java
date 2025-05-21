@@ -12,7 +12,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.World;
 
 public interface ItemFinishedEvents {
-    Event<ItemFinishedEvents> EVENT = EventFactory.createArrayBacked(ItemFinishedEvents.class,
+    Event<ItemFinishedEvents> ITEM_FINISHED = EventFactory.createArrayBacked(
+            ItemFinishedEvents.class,
             (listeners) -> (player, world, stack) -> {
                 for (ItemFinishedEvents listener : listeners) {
                     listener.onFinish(player, world, stack);
@@ -21,24 +22,24 @@ public interface ItemFinishedEvents {
 
     void onFinish(PlayerEntity player, World world, ItemStack stack);
 
-    static void onItemFinished(PlayerEntity player, World world, ItemStack stack) {
+    static void onItemFinished(PlayerEntity player, World ignoredWorld, ItemStack stack) {
         if (!(player instanceof ServerPlayerEntity serverPlayer)) return;
 
-        boolean inConfig = Heartcore.CONFIG.healingConfig.healingItems.contains(stack.getItem().toString());
-        Integer customData = hasAddHeartTag(stack);
-
-        if (customData == null && inConfig) {
-            HeartcoreManager.addHeart(serverPlayer, Heartcore.CONFIG.healingConfig.heartsPerHealingItem);
-        } else if (customData != null) {
-            HeartcoreManager.addHeart(serverPlayer, customData);
+        int heartAmount = getHeartsToHeal(stack);
+        if (heartAmount > 0) {
+            HeartcoreManager.addHeart(serverPlayer, heartAmount);
         }
     }
 
-    private static Integer hasAddHeartTag(ItemStack stack) {
+    static int getHeartsToHeal(ItemStack stack) {
         NbtComponent component = stack.get(DataComponentTypes.CUSTOM_DATA);
-        if (component == null) return null;
-        if (!component.copyNbt().contains("heartcore:heart_modifier")) return null;
 
-        return component.copyNbt().getInt("heartcore:heart_modifier", 2);
+        if (component != null && component.copyNbt().contains("heartcore:heart_modifier")) {
+            return component.copyNbt().getInt("heartcore:heart_modifier", 2);
+        }
+
+        return Heartcore.CONFIG.healingConfig.healingItems.contains(stack.getItem().toString())
+                ? Heartcore.CONFIG.healingConfig.heartsPerHealingItem
+                : 0;
     }
 }

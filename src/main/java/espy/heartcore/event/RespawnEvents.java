@@ -15,25 +15,34 @@ import net.minecraft.world.chunk.Chunk;
 import java.util.*;
 
 public class RespawnEvents {
-    public static void onPlayerRespawn(ServerPlayerEntity ignoredOldPlayer, ServerPlayerEntity newPlayer, boolean ignoredAlive) {
-        if (!newPlayer.getWorld().getLevelProperties().isHardcore()) return;
-        if (HeartcoreManager.isOutOfLives(newPlayer)) return;
+    public static void onPlayerRespawn(ServerPlayerEntity ignoredOldPlayer, ServerPlayerEntity newPlayer, boolean ignoredWasAlive) {
+        if (!isEligibleForRespawn(newPlayer)) return;
 
-        // Remove a heart and heal
-        HeartcoreManager.removeHeart(newPlayer);
-        newPlayer.setHealth(newPlayer.getMaxHealth());
+        processRespawnEffects(newPlayer);
+        handleRandomRespawn(newPlayer);
+    }
 
-        if (Heartcore.CONFIG.respawningConfig.randomRespawn) {
-            BlockPos pos = findRandomLandPosition(newPlayer.getServerWorld());
-            if (pos != null) {
-                Set<PositionFlag> flags = EnumSet.noneOf(PositionFlag.class);
-                newPlayer.teleport(newPlayer.getServerWorld(), pos.getX(), pos.getY(), pos.getZ(), flags, newPlayer.getYaw(), newPlayer.getPitch(), true);
-            }
+    private static boolean isEligibleForRespawn(ServerPlayerEntity player) {
+        return player.getWorld().getLevelProperties().isHardcore() && !HeartcoreManager.isOutOfLives(player);
+    }
+
+    private static void processRespawnEffects(ServerPlayerEntity player) {
+        HeartcoreManager.removeHeart(player);
+        player.setHealth(player.getMaxHealth());
+    }
+
+    private static void handleRandomRespawn(ServerPlayerEntity player) {
+        if (!Heartcore.CONFIG.respawningConfig.randomRespawn) return;
+
+        BlockPos pos = findRandomLandPosition(player.getServerWorld());
+        if (pos != null) {
+            Set<PositionFlag> flags = EnumSet.noneOf(PositionFlag.class);
+            player.teleport(player.getServerWorld(), pos.getX(), pos.getY(), pos.getZ(), flags, player.getYaw(), player.getPitch(), true);
         }
     }
 
     private static BlockPos findRandomLandPosition(ServerWorld world) {
-        int MAX_ATTEMPTS = 20;
+        final int MAX_ATTEMPTS = 20;
         Vec3i center = world.getSpawnPos();
 
         for (int i = 0; i < MAX_ATTEMPTS; i++) {
@@ -41,29 +50,25 @@ public class RespawnEvents {
             Chunk chunk = world.getChunk(targetXZ);
             OptionalInt yOpt = findSafeTopY(chunk, targetXZ.getX(), targetXZ.getZ(), world);
 
-            if (yOpt.isEmpty()) continue;
-
-            int y = yOpt.getAsInt();
-            BlockPos targetPos = new BlockPos(targetXZ.getX(), y, targetXZ.getZ());
-
-            if (isSafePosition(chunk, targetPos)) {
-                return targetPos;
+            if (yOpt.isPresent()) {
+                BlockPos targetPos = new BlockPos(targetXZ.getX(), yOpt.getAsInt(), targetXZ.getZ());
+                if (isSafePosition(chunk, targetPos)) return targetPos;
             }
         }
 
         return null;
     }
 
-
     private static BlockPos getRandomXZ(Vec3i center) {
-        int MIN_RADIUS = Heartcore.CONFIG.respawningConfig.minRadius;
-        int MAX_RADIUS = Heartcore.CONFIG.respawningConfig.maxRadius;
+        int minRadius = Heartcore.CONFIG.respawningConfig.minRadius;
+        int maxRadius = Heartcore.CONFIG.respawningConfig.maxRadius;
 
         Random rand = new Random();
-        double r = Math.sqrt(rand.nextDouble() * (MAX_RADIUS * MAX_RADIUS - MIN_RADIUS * MIN_RADIUS) + MIN_RADIUS * MIN_RADIUS);
+        double r = Math.sqrt(rand.nextDouble() * (maxRadius * maxRadius - minRadius * minRadius) + minRadius * minRadius);
         double angle = rand.nextDouble() * 2 * Math.PI;
         int dx = (int) Math.round(r * Math.cos(angle));
         int dz = (int) Math.round(r * Math.sin(angle));
+
         return new BlockPos(center.getX() + dx, 0, center.getZ() + dz);
     }
 
@@ -72,12 +77,11 @@ public class RespawnEvents {
         final int bottomY = chunk.getBottomY();
         final BlockPos.Mutable pos = new BlockPos.Mutable(x, topY - 1, z);
 
-        BlockState head = chunk.getBlockState(pos); // Start at top - 1
+        BlockState head = chunk.getBlockState(pos);
         BlockState body = chunk.getBlockState(pos.move(Direction.DOWN));
-        BlockState feet;
 
         while (pos.getY() > bottomY) {
-            feet = chunk.getBlockState(pos.move(Direction.DOWN));
+            BlockState feet = chunk.getBlockState(pos.move(Direction.DOWN));
             if (feet.isSideSolidFullSquare(world, pos, Direction.UP) && body.isAir() && head.isAir()) {
                 return OptionalInt.of(pos.getY() + 1);
             }
@@ -90,7 +94,7 @@ public class RespawnEvents {
 
     private static boolean isSafePosition(Chunk chunk, BlockPos pos) {
         if (pos.getY() <= chunk.getBottomY()) return false;
-        var state = chunk.getBlockState(pos.down());
+        BlockState state = chunk.getBlockState(pos.down());
         return state.getFluidState().isEmpty() && state.getBlock() != Blocks.FIRE;
     }
 }

@@ -7,8 +7,16 @@ import net.minecraft.server.network.ServerPlayerEntity;
 
 public class DeathEvents {
     public static void afterPlayerDeath(LivingEntity entity, DamageSource ignoredDamageSource) {
-        if (entity instanceof ServerPlayerEntity player && player instanceof CustomPlayerData data) {
+        if (!(entity instanceof ServerPlayerEntity player)) return;
+
+
+        updateDeathFlags(player);
+    }
+
+    private static void updateDeathFlags(ServerPlayerEntity player) {
+        if (player instanceof CustomPlayerData data) {
             data.setRecentlyDiedFlag(true);
+            data.setHealthAtDeath(player.getMaxHealth());
         }
     }
 }

@@ -10,6 +10,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
+import net.minecraft.world.Heightmap;
 import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
@@ -48,7 +49,7 @@ public class RespawnEvents {
         for (int i = 0; i < MAX_ATTEMPTS; i++) {
             BlockPos targetXZ = getRandomXZ(center);
             Chunk chunk = world.getChunk(targetXZ);
-            OptionalInt yOpt = findSafeTopY(chunk, targetXZ.getX(), targetXZ.getZ(), world);
+            OptionalInt yOpt = findSafeTopY(targetXZ.getX(), targetXZ.getZ(), world);
 
             if (yOpt.isPresent()) {
                 BlockPos targetPos = new BlockPos(targetXZ.getX(), yOpt.getAsInt(), targetXZ.getZ());
@@ -72,21 +73,17 @@ public class RespawnEvents {
         return new BlockPos(center.getX() + dx, 0, center.getZ() + dz);
     }
 
-    private static OptionalInt findSafeTopY(Chunk chunk, int x, int z, ServerWorld world) {
-        final int topY = chunk.getTopYInclusive();
-        final int bottomY = chunk.getBottomY();
-        final BlockPos.Mutable pos = new BlockPos.Mutable(x, topY - 1, z);
+    private static OptionalInt findSafeTopY(int x, int z, ServerWorld world) {
+        int surfaceY = world.getTopY(Heightmap.Type.WORLD_SURFACE, x, z);
+        BlockPos pos = new BlockPos(x, surfaceY, z);
 
-        BlockState head = chunk.getBlockState(pos);
-        BlockState body = chunk.getBlockState(pos.move(Direction.DOWN));
+        BlockState feet = world.getBlockState(pos);
+        BlockState head = world.getBlockState(pos.up());
+        BlockState below = world.getBlockState(pos.down());
 
-        while (pos.getY() > bottomY) {
-            BlockState feet = chunk.getBlockState(pos.move(Direction.DOWN));
-            if (feet.isSideSolidFullSquare(world, pos, Direction.UP) && body.isAir() && head.isAir()) {
-                return OptionalInt.of(pos.getY() + 1);
-            }
-            head = body;
-            body = feet;
+        if (below.isSideSolidFullSquare(world, pos.down(), Direction.UP)
+                && feet.isAir() && head.isAir()) {
+            return OptionalInt.of(surfaceY);
         }
 
         return OptionalInt.empty();
